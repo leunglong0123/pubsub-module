@@ -1,0 +1,108 @@
+{
+    "type": "record",
+    "name": "PubSubEvent",
+    "doc": "A generic abstraction schema for events published on Pub/Sub.",
+    "fields": [
+        {
+            "name": "eventContext",
+            "type": {
+                "type": "record",
+                "name": "EventContext",
+                "doc": "Contextual metadata about the event.",
+                "fields": [
+                    {
+                        "name": "eventId",
+                        "type": "string",
+                        "doc": "A unique identifier for this event instance."
+                    },
+                    {
+                        "name": "eventType",
+                        "type": "string",
+                        "doc": "A string that identifies the category or type of the event (e.g., 'com.example.user.created')."
+                    },
+                    {
+                        "name": "eventTimestamp",
+                        "type": "string",
+                        "doc": "The UTC timestamp when the event was generated, in ISO 8601 format."
+                    },
+                    {
+                        "name": "source",
+                        "type": "string",
+                        "doc": "The origin or source of the event, for example a service or component name."
+                    },
+                    {
+                        "name": "specVersion",
+                        "type": "string",
+                        "default": "1.0.0",
+                        "doc": "The version of the event specification, allowing schema evolution."
+                    },
+                    {
+                        "name": "correlationId",
+                        "type": [
+                            "null",
+                            "string"
+                        ],
+                        "default": null,
+                        "doc": "An optional correlation identifier to link related events."
+                    },
+                    {
+                        "name": "traceId",
+                        "type": [
+                            "null",
+                            "string"
+                        ],
+                        "default": null,
+                        "doc": "An optional trace identifier for distributed tracing."
+                    }
+                ]
+            }
+        },
+        {
+            "name": "payload",
+            "type": {
+                "type": "record",
+                "name": "EventPayload",
+                "doc": "The domain-specific data carried by the event.",
+                "fields": [
+                    {
+                        "name": "data",
+                        "type": "string",
+                        "doc": "JSON-encoded string representing the event's domain-specific data."
+                    },
+                    {
+                        "name": "metadata",
+                        "type": [
+                            "null",
+                            {
+                                "type": "record",
+                                "name": "EventPayloadMetadata",
+                                "fields": [
+                                    {
+                                        "name": "version",
+                                        "type": [
+                                            "null",
+                                            "string"
+                                        ],
+                                        "default": null,
+                                        "doc": "A version number for the data schema."
+                                    },
+                                    {
+                                        "name": "tags",
+                                        "type": {
+                                            "type": "array",
+                                            "items": "string"
+                                        },
+                                        "default": [],
+                                        "doc": "A list of tags for classification or filtering."
+                                    }
+                                ]
+                            }
+                        ],
+                        "default": null,
+                        "doc": "Additional metadata that enriches the event payload."
+                    }
+                ]
+            }
+        }
+    ]
+}
