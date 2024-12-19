@@ -40,7 +40,7 @@ class PubSubBase:
             data = json.dumps(message).encode("utf-8")
             
             # Publish the message
-            future = publisher.publish(topic_path, data, **(attributes or {}))
+            future = publisher.publish(topic_path, data)
             return future.result()
         except Exception as e:
             raise RuntimeError(f"Failed to publish message: {e}")
