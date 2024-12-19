@@ -6,7 +6,7 @@ setup(
     description="A reusable Pub/Sub module for GCP",
     author="Bryan",
     author_email="leonellus0123@gmail.com",
-    packages=find_packages(),  # Automatically find packages
+    packages=['pubsub_module'],  # Automatically find packages
     install_requires=[
         "google-cloud-pubsub>=2.11.0",  # List dependencies
     ],
