@@ -35,10 +35,10 @@ class PubSubBase:
         try:
             publisher = self._get_publisher(topic_id)
             topic_path = publisher.topic_path(self.project_id, topic_id)
-            
+
             # Encode the message as JSON
             data = json.dumps(message).encode("utf-8")
-            
+
             # Publish the message
             future = publisher.publish(topic_path, data)
             return future.result()

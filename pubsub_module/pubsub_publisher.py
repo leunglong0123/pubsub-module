@@ -2,7 +2,7 @@ from google.cloud.pubsub import PublisherClient
 from google.pubsub_v1.types import Encoding
 from google.api_core.exceptions import NotFound
 
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 import avro.schema
 import avro.io
@@ -14,6 +14,7 @@ from pubsub_module.pubsub_base import PubSubBase
 
 SPEC_VERSION = "1.0.0"
 
+DATETIME_FORMAT = "%Y-%m-%d-T%H:%M:%S"
 
 class PubSubPublisher(PubSubBase):
     def __init__(self, project_id: str, avsc_file: str, event_type: str = "default-event-type", event_source: str = "default.event.source", correlation_id: str = 'default-pubsub-class', metadata_tags: List[str] = None):
@@ -39,7 +40,7 @@ class PubSubPublisher(PubSubBase):
         self.publisher_client = PublisherClient()
         super().__init__(project_id)
 
-    def _generate_event_context(self, trace_id: str) -> Dict[str, Any]:
+    def _generate_event_context(self, correlation_id: str, trace_id: str) -> Dict[str, Any]:
         """
         Generates the event context, filling in dynamic fields.
 
@@ -50,10 +51,10 @@ class PubSubPublisher(PubSubBase):
             "eventId": str(uuid.uuid4()),  # Dynamically generate eventId
             "eventType": self.event_type,  # Fixed eventType
             # Generate event timestamp
-            "eventTimestamp": datetime.now(datetime.UTC),
+            "eventTimestamp": datetime.now(timezone.utc).strftime(DATETIME_FORMAT),
             "source": self.source,  # Fixed source
             "specVersion": self.spec_version,  # Fixed specVersion
-            "correlationId": {"string": self.correlation_id},
+            "correlationId": {"string": correlation_id},
             "traceId": {"string": trace_id}  # Trace ID passed as an argument
         }
 
@@ -61,7 +62,7 @@ class PubSubPublisher(PubSubBase):
         self,
         topic_id: str,
         message: Dict[str, Any],
-        attributes: Optional[Dict[str, str]] = None,
+        correlation_id: str,
         trace_id: str = None
     ) -> str:
         """
@@ -80,7 +81,8 @@ class PubSubPublisher(PubSubBase):
                 request={"topic": topic_path})
             encoding = topic.schema_settings.encoding
 
-            message["eventContext"] = self._generate_event_context(trace_id)
+            message["eventContext"] = self._generate_event_context(
+                correlation_id=correlation_id, trace_id=trace_id)
             message["payload"]["metadata"] = {
                 "EventPayloadMetadata": {
                     "version": {"string": "1.0.0"},
@@ -88,7 +90,6 @@ class PubSubPublisher(PubSubBase):
                 }
             }
 
-            # Encode the message using Avro
             if encoding == Encoding.BINARY:
                 # Binary encoding
                 data = self._encode_avro_binary(message)
